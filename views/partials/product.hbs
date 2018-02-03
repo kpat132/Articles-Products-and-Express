@@ -1,0 +1,11 @@
+<div class="product">
+  <h1>Product: </h1>
+  <h2>Name: {{name}}</h2>
+  <h3>Price: {{price}}</h3>
+  <h3>Inventory: {{inventory}}</h3>
+  <h3>ID: {{id}}</h3>
+  <form action="/products/{{id}}?_method=DELETE" method="POST" enctype="application/x-www-form-urlencoded">
+    <button type="submit">Delete</button>
+  </form>
+
+</div>
