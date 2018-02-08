@@ -1,30 +1,30 @@
 const express = require('express');
-
 const router = express.Router();
 const dbProducts = require(`../db/productsDB`);
+const knex = require(`../db/knex/knex.js`);
 
 router.post('/', (req, res) => {
   let body = req.body;
 
-  const data = {
+  let data = {
     name: body.name,
-    price: parseFloat(body.price),
-    inventory: parseFloat(body.inventory)
+    price: body.price,
+    inventory: body.inventory
   }
-
-  const val = validate(data);
-  if (val === true) {
-    // console.log(val);
-    //res.send({ 'success': true });
-    dbProducts.post(data);
-    return res.redirect('/products');
-  }
-  else {
-    //console.log(val);
-    //res.send(val);
+    return knex('products').insert(data, '*')
+      .then(result => {
+        console.log(result);
+        return res.redirect('/products');
+      })
+   .catch(err =>{
     return res.redirect('/products/new');
-  }
+   })
+ 
 });
+
+
+
+
 
 
 
@@ -38,10 +38,10 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   let id = req.params.id;
   const deleteItem = dbProducts.deleteProduct(id);
-  if(deleteItem){
+  if (deleteItem) {
     res.redirect("/products");
   }
-  else{
+  else {
     console.log("TEST");
   }
 
@@ -66,7 +66,19 @@ router.get('/:id', (req, res) => {
 
 });
 router.get('/', (req, res) => {
-  res.render('partials/index', { pro: dbProducts.getArray() });
+
+ return knex.select(`*`).from('products')
+  
+ .then(result=>{
+   console.log(result);
+
+    let productObj = {
+      name: result.name,
+      price: result.price,
+      inventory: result.inventory
+    }
+    res.render('partials/index',{pro:result});
+  })
 });
 
 

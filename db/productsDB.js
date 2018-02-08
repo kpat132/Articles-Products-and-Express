@@ -1,5 +1,5 @@
 let productArr = [];
-let idNum = 3;
+let idNum = 2;
 
 let fakeData = {
   id: 1,
