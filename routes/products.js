@@ -4,13 +4,7 @@ const dbProducts = require(`../db/productsDB`);
 const knex = require(`../db/knex/knex.js`);
 
 router.post('/', (req, res) => {
-  let body = req.body;
-
-  let data = {
-    name: body.name,
-    price: body.price,
-    inventory: body.inventory
-  }
+  let data = {name, price, inventory} = req.body;
     return knex('products').insert(data, '*')
       .then(result => {
         console.log(result);
@@ -19,34 +13,47 @@ router.post('/', (req, res) => {
    .catch(err =>{
     return res.redirect('/products/new');
    })
- 
 });
 
 
-
-
-
-
-
 router.put('/:id', (req, res) => {
+  let data = {name, price, inventory} = req.body;
   let id = req.params.id;
-  let body = req.body;
-  dbProducts.editProduct(body, id);
-  return res.redirect(`/products/${id}`)
+
+   return knex('products').where('id', id).update({
+      name : data.name,
+      price: data.price,
+      inventory: data.inventory,
+  },'*')
+  .then(result => {
+    res.redirect(`/products/${id}`);
+  })
+  .catch(err => {
+    res.json('error');
+  })
+
 })
 
 router.delete('/:id', (req, res) => {
   let id = req.params.id;
-  const deleteItem = dbProducts.deleteProduct(id);
+  return knex.select(`*`).from(`products`).where(`id`, id).del()
+  .then(result => {
+    res.redirect("/products");
+  })
+  .catch(err => {
+    res.json(`error`);
+  })
+
+
+
+
   if (deleteItem) {
     res.redirect("/products");
   }
   else {
     console.log("TEST");
   }
-
 });
-
 
 router.get('/new', (req, res) => {
   return res.render('partials/new');
@@ -54,15 +61,28 @@ router.get('/new', (req, res) => {
 
 router.get(`/:id/edit`, (req, res) => {
   let id = req.params.id;
-  let elemIndex = dbProducts.findIndex(id);
-  res.render('partials/edit', elemIndex);
+  return knex.select(`*`).from(`products`).where(`id`,id)
+  .then(result => {
+    res.render('partials/edit', result[0]);
+  })
+  .catch(err => {
+    res.json('error');
+  })
+
 
 });
 
 router.get('/:id', (req, res) => {
   let id = req.params.id;
-  let elemIndex = dbProducts.findIndex(id);
-  res.render('partials/product', elemIndex);
+
+  return knex.select(`*`).from('products').where(`id`, id)
+  .then(result =>{
+    console.log("CONSOLE"+result[0]);
+    res.render('partials/product', result[0]);
+  })
+  .catch(err =>{
+    res.json('Error');
+  })
 
 });
 router.get('/', (req, res) => {
@@ -78,6 +98,9 @@ router.get('/', (req, res) => {
       inventory: result.inventory
     }
     res.render('partials/index',{pro:result});
+  })
+  .catch(err =>{
+    res.json('Error');
   })
 });
 
